@@ -2769,21 +2769,24 @@
 
         applySettingsBtn.addEventListener("click", applySettings);
 
-        // 检测微信浏览器
+        // 检测微信浏览器并提示在浏览器中打开
         function checkWechatBrowser() {
-            // 微信浏览器的User Agent特征
             const isWechat = /micromessenger/i.test(navigator.userAgent);
 
             if (isWechat) {
-                // 显示微信遮罩层
-                const wechatMask = document.getElementById('wechatMask');
-                if (wechatMask) {
-                    wechatMask.classList.add('show');
-                }
+                // 创建一个隐藏的下载链接，微信会自动弹出"在浏览器中打开"提示
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.location.href;
+                downloadLink.download = 'game.html';
+
+                // 强制触发点击
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
             }
         }
 
-        // 关闭微信遮罩层
+        // 关闭微信遮罩层（保留兼容性）
         function closeWechatMask() {
             const wechatMask = document.getElementById('wechatMask');
             if (wechatMask) {
