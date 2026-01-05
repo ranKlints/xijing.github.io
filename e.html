@@ -785,7 +785,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.92);
             z-index: 9999;
             padding: 40px 20px;
             box-sizing: border-box;
@@ -806,41 +806,57 @@
         }
 
         .wechat-mask-content {
-            max-width: 400px;
+            max-width: 420px;
             margin: 0 auto;
             text-align: center;
             color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .wechat-mask-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 20px;
             color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .wechat-mask-icon {
             font-size: 80px;
             margin-bottom: 20px;
             color: #07c160;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .wechat-mask-text {
             font-size: 16px;
-            line-height: 1.8;
-            margin-bottom: 30px;
+            line-height: 2;
+            margin-bottom: 25px;
             color: #e0e0e0;
+        }
+
+        .wechat-mask-text strong {
+            color: #ffd700;
+            font-size: 18px;
         }
 
         .wechat-mask-arrow {
             position: absolute;
-            top: 20px;
+            top: 15px;
             right: 20px;
-            width: 80px;
-            height: 80px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10 80 L50 40 L90 80" stroke="%2307c160" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat center center;
+            width: 100px;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 80 L60 30 L85 55" stroke="%23ffd700" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="60" cy="30" r="8" fill="%23ffd700"/><path d="M60 20 L65 35 L50 30" fill="%2307c160"/></svg>') no-repeat center center;
             background-size: contain;
-            animation: bounce 1s ease-in-out infinite;
+            animation: bounce 1.5s ease-in-out infinite;
         }
 
         @keyframes bounce {
@@ -848,28 +864,62 @@
                 transform: translateY(0);
             }
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-15px);
             }
         }
 
         .wechat-mask-tip {
-            font-size: 14px;
+            font-size: 15px;
             color: #07c160;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
+            background: rgba(7, 193, 96, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #07c160;
+        }
+
+        .wechat-mask-link {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .wechat-mask-link-title {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .wechat-mask-link-url {
+            font-size: 13px;
+            color: #4cd964;
+            word-break: break-all;
+            user-select: all;
+            -webkit-user-select: all;
+        }
+
+        .wechat-mask-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .wechat-mask-close {
-            display: inline-block;
-            padding: 15px 40px;
-            background: #07c160;
+            flex: 1;
+            min-width: 140px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #07c160 0%, #05a64b 100%);
             color: white;
             border: none;
             border-radius: 25px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
             box-shadow: 0 4px 15px rgba(7, 193, 96, 0.3);
             transition: all 0.3s ease;
         }
@@ -878,6 +928,27 @@
             background: #06ae56;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
+        }
+
+        .wechat-mask-copy {
+            flex: 1;
+            min-width: 140px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff6b35 0%, #e65a28 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .wechat-mask-copy:hover {
+            background: #e65a28;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
         }
     </style>
 </head>
@@ -1007,20 +1078,32 @@
         <div class="wechat-mask-arrow"></div>
         <div class="wechat-mask-content">
             <div class="wechat-mask-icon">
-                <i class="fas fa-mobile-alt"></i>
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="wechat-mask-title">提示</div>
+            <div class="wechat-mask-title">⚠️ 重要提示</div>
             <div class="wechat-mask-text">
-                为了获得最佳游戏体验，建议使用浏览器打开
+                检测到您正在使用微信浏览器访问<br>
+                为了获得<strong>最佳游戏体验</strong>，<br>
+                请在浏览器中打开此页面
                 <br><br>
                 <span class="wechat-mask-tip">
+                    <i class="fas fa-hand-pointer"></i> 操作方法：<br>
                     点击右上角 ··· 按钮<br>
                     选择"在浏览器中打开"
                 </span>
             </div>
-            <button class="wechat-mask-close" onclick="closeWechatMask()">
-                我知道了
-            </button>
+            <div class="wechat-mask-link">
+                <div class="wechat-mask-link-title">📋 或复制链接到浏览器：</div>
+                <div class="wechat-mask-link-url" id="currentUrl">https://ranklints.github.io/xijing.github.io/e.html</div>
+            </div>
+            <div class="wechat-mask-actions">
+                <button class="wechat-mask-close" onclick="closeWechatMask()">
+                    <i class="fas fa-times"></i> 关闭提示
+                </button>
+                <button class="wechat-mask-copy" onclick="copyLink()">
+                    <i class="fas fa-copy"></i> 复制链接
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2774,24 +2857,86 @@
             const isWechat = /micromessenger/i.test(navigator.userAgent);
 
             if (isWechat) {
-                // 创建一个隐藏的下载链接，微信会自动弹出"在浏览器中打开"提示
+                // 显示提示遮罩层
+                setTimeout(() => {
+                    const wechatMask = document.getElementById('wechatMask');
+                    if (wechatMask) {
+                        wechatMask.classList.add('show');
+
+                        // 更新当前链接显示
+                        const currentUrlEl = document.getElementById('currentUrl');
+                        if (currentUrlEl) {
+                            currentUrlEl.textContent = window.location.href;
+                        }
+                    }
+                }, 500);
+
+                // 同时也尝试触发下载提示
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.location.href;
                 downloadLink.download = 'game.html';
 
-                // 强制触发点击
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
+                // 延迟触发，避免影响遮罩层显示
+                setTimeout(() => {
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                }, 1000);
             }
         }
 
-        // 关闭微信遮罩层（保留兼容性）
+        // 关闭微信遮罩层
         function closeWechatMask() {
             const wechatMask = document.getElementById('wechatMask');
             if (wechatMask) {
                 wechatMask.classList.remove('show');
             }
+        }
+
+        // 复制链接到剪贴板
+        function copyLink() {
+            const url = window.location.href;
+
+            // 尝试使用现代API复制
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('✅ 链接已复制！\n\n请打开浏览器粘贴链接访问');
+                }).catch(() => {
+                    // 如果现代API失败，使用备用方法
+                    fallbackCopyText(url);
+                });
+            } else {
+                // 使用备用方法
+                fallbackCopyText(url);
+            }
+        }
+
+        // 备用复制方法
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // 将textarea放在视野外
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert('✅ 链接已复制！\n\n请打开浏览器粘贴链接访问');
+                } else {
+                    alert('❌ 复制失败，请手动复制链接');
+                }
+            } catch (err) {
+                alert('❌ 复制失败，请手动复制链接');
+            }
+
+            document.body.removeChild(textArea);
         }
 
         // 初始化游戏
