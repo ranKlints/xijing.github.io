@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鸽巢原理（抽屉原理）动态演示</title>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: containerAppear 0.6s ease-out;
+        }
+
+        @keyframes containerAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            animation: headerShine 15s linear infinite;
+        }
+
+        @keyframes headerShine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            position: relative;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ==================== 主要内容区域 ==================== */
+        main {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid transparent;
+            background-image: linear-gradient(#667eea, #667eea), linear-gradient(#667eea, #667eea);
+            background-size: 100% 3px, 0 3px;
+            background-repeat: no-repeat;
+            background-position: left bottom, left bottom;
+            animation: titleUnderline 0.8s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes titleUnderline {
+            0% { background-size: 0 3px, 0 3px; }
+            100% { background-size: 100% 3px, 0 3px; }
+        }
+
+        /* ==================== 交互区样式 ==================== */
+        .interaction-area {
+            background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 35px;
+            border-radius: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 80px;
+            font-size: 1.05em;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 130px;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-group input:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .input-group input.error {
+            border-color: #e74c3c;
+            animation: shake 0.5s ease;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15), 0 4px 12px rgba(231, 76, 60, 0.2);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 8px;
+            min-height: 24px;
+            font-weight: 500;
+            animation: errorFadeIn 0.3s ease;
+        }
+
+        @keyframes errorFadeIn {
+            0% { opacity: 0; transform: translateY(-5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 14px 36px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-random {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ==================== 演示区样式 ==================== */
+        .demonstration-area {
+            background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 20px;
+            min-height: 350px;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .result-display {
+            text-align: center;
+            padding: 25px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border-radius: 16px;
+            border-left: 6px solid #e74c3c;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+            animation: resultAppear 0.5s ease-out;
+        }
+
+        @keyframes resultAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-display h3 {
+            color: #e74c3c;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .result-display .calculation {
+            font-size: 1.15em;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .result-display .highlight {
+            color: #e74c3c;
+            font-weight: 800;
+            font-size: 1.5em;
+            text-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+        }
+
+        .pigeonholes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .pigeonhole {
+            background: linear-gradient(145deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #2196f3;
+            border-radius: 18px;
+            min-width: 160px;
+            max-width: 220px;
+            padding: 18px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+            animation: pigeonholeAppear 0.5s ease-out;
+        }
+
+        @keyframes pigeonholeAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .pigeonhole:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(33, 150, 243, 0.35);
+            border-color: #1976d2;
+        }
+
+        .pigeonhole-title {
+            text-align: center;
+            font-weight: 700;
+            color: #1976d2;
+            margin-bottom: 16px;
+            font-size: 1.15em;
+            text-shadow: 0 2px 4px rgba(25, 118, 210, 0.1);
+        }
+
+        .pigeonhole-count {
+            text-align: center;
+            font-size: 0.95em;
+            color: #1976d2;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .pigeons-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 70px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .pigeon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(145deg, #ff6b6b 0%, #ee5a5a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 
+                0 4px 12px rgba(255, 107, 107, 0.4),
+                0 2px 4px rgba(255, 107, 107, 0.2);
+            animation: pigeonAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .pigeon:hover {
+            transform: scale(1.25) translateY(-3px);
+            box-shadow: 
+                0 8px 20px rgba(255, 107, 107, 0.5),
+                0 4px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            font-size: 1.15em;
+            padding: 80px 20px;
+            font-weight: 500;
+            animation: emptyMessagePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes emptyMessagePulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* ==================== 原理解释区样式 ==================== */
+        .explanation-area {
+            background: linear-gradient(145deg, #fff9e6 0%, #fff3cd 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border-left: 6px solid #ffc107;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+        }
+
+        .principle-definition {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .principle-definition h4 {
+            color: #ffc107;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .principle-definition p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+
+        .principle-definition .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .dynamic-explanation {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .dynamic-explanation h4 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .dynamic-explanation p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+
+        .special-case {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* ==================== 动画效果 ==================== */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes pigeonAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(-180deg);
+            }
+            50% {
+                transform: scale(1.3) rotate(0deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* ==================== 响应式设计 ==================== */
+        @media (max-width: 768px) {
+            .interaction-area {
+                flex-direction: column;
+            }
+
+            .input-group {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            button {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .pigeonhole {
+                min-width: 120px;
+            }
+
+            header h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页头 -->
+        <header>
+            <h1>🕊️ 鸽巢原理（抽屉原理）动态演示</h1>
+            <p>通过交互式演示，直观理解鸽巢原理的数学思想</p>
+        </header>
+
+        <main>
+            <!-- 交互区 -->
+            <section class="section">
+                <h2 class="section-title">📊 交互区</h2>
+                <div class="interaction-area">
+                    <div class="input-group">
+                        <label for="pigeonCount">鸽子数量:</label>
+                        <input type="number" id="pigeonCount" value="10" min="1" placeholder="请输入正整数">
+                    </div>
+                    <div class="input-group">
+                        <label for="nestCount">鸽巢数量:</label>
+                        <input type="number" id="nestCount" value="3" min="1" placeholder="请输入正整数">
+                    </div>
+                    <div class="error-message" id="errorMessage"></div>
+                    <div class="button-group">
+                        <button class="btn-generate" onclick="generateDemo()">生成演示</button>
+                        <button class="btn-random" onclick="randomAssign()" id="randomBtn" disabled>随机分配</button>
+                        <button class="btn-reset" onclick="resetDemo()">重置演示</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 演示区 -->
+            <section class="section">
+                <h2 class="section-title">🎬 演示区</h2>
+                <div class="demonstration-area">
+                    <div class="empty-message" id="emptyMessage">
+                        点击"生成演示"按钮开始演示鸽巢原理
+                    </div>
+                    <div class="result-display" id="resultDisplay" style="display: none;">
+                        <h3>📈 计算结果</h3>
+                        <p class="calculation" id="calculationText"></p>
+                    </div>
+                    <div class="pigeonholes-container" id="pigeonholesContainer"></div>
+                </div>
+            </section>
+
+            <!-- 原理解释区 -->
+            <section class="section">
+                <h2 class="section-title">📚 原理解释区</h2>
+                <div class="explanation-area">
+                    <div class="principle-definition">
+                        <h4>📖 鸽巢原理定义</h4>
+                        <p>
+                            鸽巢原理（又称抽屉原理、狄利克雷抽屉原理）是组合数学中的一个基本原理。
+                            它的核心思想是：如果有更多的鸽子要放进较少的鸽巢中，那么至少有一个鸽巢中会有多只鸽子。
+                        </p>
+                        <div class="formula">
+                            若有 n 个鸽巢和 k 只鸽子，且 k > n<br>
+                            则至少有一个鸽巢中包含至少 ⌈k/n⌉ 只鸽子<br>
+                            <small style="color: #666;">（其中 ⌈x⌉ 表示向上取整）</small>
+                        </div>
+                    </div>
+                    <div class="dynamic-explanation">
+                        <h4>💡 实例化解释</h4>
+                        <p id="dynamicExplanation">请先输入数值并生成演示，此处将显示对应的实例化解释。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let pigeonCount = 0;
+        let nestCount = 0;
+        let isGenerated = false;
+
+        // ==================== DOM 元素引用 ====================
+        const pigeonCountInput = document.getElementById('pigeonCount');
+        const nestCountInput = document.getElementById('nestCount');
+        const errorMessage = document.getElementById('errorMessage');
+        const randomBtn = document.getElementById('randomBtn');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const calculationText = document.getElementById('calculationText');
+        const pigeonholesContainer = document.getElementById('pigeonholesContainer');
+        const dynamicExplanation = document.getElementById('dynamicExplanation');
+
+        // ==================== 输入验证 ====================
+        function validateInput(value, fieldName) {
+            // 检查是否为空
+            if (value === '' || value === null) {
+                return `请输入${fieldName}`;
+            }
+            // 转换为数字
+            const num = Number(value);
+            // 检查是否为有效数字
+            if (isNaN(num)) {
+                return `${fieldName}必须是数字`;
+            }
+            // 检查是否为正整数
+            if (num <= 0 || !Number.isInteger(num)) {
+                return `${fieldName}必须是正整数`;
+            }
+            return null; // 验证通过
+        }
+
+        // ==================== 显示错误信息 ====================
+        function showError(message) {
+            errorMessage.textContent = message;
+            pigeonCountInput.classList.add('error');
+            nestCountInput.classList.add('error');
+            
+            // 2秒后移除错误样式
+            setTimeout(() => {
+                pigeonCountInput.classList.remove('error');
+                nestCountInput.classList.remove('error');
+            }, 2000);
+        }
+
+        // ==================== 清除错误信息 ====================
+        function clearError() {
+            errorMessage.textContent = '';
+            pigeonCountInput.classList.remove('error');
+            nestCountInput.classList.remove('error');
+        }
+
+        // ==================== 生成演示 ====================
+        function generateDemo() {
+            clearError();
+            
+            // 获取输入值
+            const pigeonInput = pigeonCountInput.value;
+            const nestInput = nestCountInput.value;
+            
+            // 验证输入
+            const pigeonError = validateInput(pigeonInput, '鸽子数量');
+            const nestError = validateInput(nestInput, '鸽巢数量');
+            
+            if (pigeonError) {
+                showError(pigeonError);
+                return;
+            }
+            if (nestError) {
+                showError(nestError);
+                return;
+            }
+            
+            // 保存数值
+            pigeonCount = Number(pigeonInput);
+            nestCount = Number(nestInput);
+            isGenerated = true;
+            
+            // 隐藏空消息，显示结果区域
+            emptyMessage.style.display = 'none';
+            resultDisplay.style.display = 'block';
+            
+            // 启用随机分配按钮
+            randomBtn.disabled = false;
+            
+            // 创建鸽巢
+            createPigeonholes();
+            
+            // 清空鸽子显示
+            clearPigeons();
+            
+            // 更新计算结果和解释
+            updateCalculationAndExplanation();
+        }
+
+        // ==================== 创建鸽巢 ====================
+        function createPigeonholes() {
+            pigeonholesContainer.innerHTML = '';
+            
+            for (let i = 1; i <= nestCount; i++) {
+                const pigeonhole = document.createElement('div');
+                pigeonhole.className = 'pigeonhole';
+                pigeonhole.id = `pigeonhole-${i}`;
+                
+                pigeonhole.innerHTML = `
+                    <div class="pigeonhole-title">🕊️ 鸽巢 ${i}</div>
+                    <div class="pigeonhole-count">当前鸽子数: <span id="count-${i}">0</span></div>
+                    <div class="pigeons-area" id="pigeons-${i}"></div>
+                `;
+                
+                pigeonholesContainer.appendChild(pigeonhole);
+            }
+        }
+
+        // ==================== 清空鸽子 ====================
+        function clearPigeons() {
+            for (let i = 1; i <= nestCount; i++) {
+                const pigeonsArea = document.getElementById(`pigeons-${i}`);
+                const countSpan = document.getElementById(`count-${i}`);
+                pigeonsArea.innerHTML = '';
+                countSpan.textContent = '0';
+            }
+        }
+
+        // ==================== 随机分配鸽子 ====================
+        function randomAssign() {
+            // 清空之前的分配
+            clearPigeons();
+            
+            // 创建鸽子数组，每个鸽子用索引标识
+            const pigeons = [];
+            for (let i = 1; i <= pigeonCount; i++) {
+                pigeons.push(i);
+            }
+            
+            // 随机分配鸽子到各个鸽巢
+            const distribution = new Array(nestCount).fill(0);
+            
+            pigeons.forEach((pigeonId, index) => {
+                // 随机选择一个鸽巢（0 到 nestCount-1）
+                const nestIndex = Math.floor(Math.random() * nestCount);
+                distribution[nestIndex]++;
+                
+                // 在延迟后添加鸽子到对应鸽巢（创建动画效果）
+                setTimeout(() => {
+                    const pigeonsArea = document.getElementById(`pigeons-${nestIndex + 1}`);
+                    const countSpan = document.getElementById(`count-${nestIndex + 1}`);
+                    
+                    const pigeon = document.createElement('div');
+                    pigeon.className = 'pigeon';
+                    pigeon.textContent = pigeonId;
+                    pigeon.title = `鸽子 ${pigeonId}`;
+                    
+                    pigeonsArea.appendChild(pigeon);
+                    countSpan.textContent = distribution[nestIndex];
+                }, index * 100); // 每隔100毫秒添加一个鸽子
+            });
+        }
+
+        // ==================== 更新计算结果和解释 ====================
+        function updateCalculationAndExplanation() {
+            const division = pigeonCount / nestCount;
+            const minPigeons = Math.ceil(division);
+            
+            // 更新计算结果
+            calculationText.innerHTML = `
+                鸽子数: ${pigeonCount} | 鸽巢数: ${nestCount}<br>
+                计算: ${pigeonCount} ÷ ${nestCount} = ${division.toFixed(2)}<br>
+                向上取整: ⌈${division.toFixed(2)}⌉ = <span class="highlight">${minPigeons}</span><br>
+                结论: 至少有一个鸽巢中有 <span class="highlight">${minPigeons}</span> 只鸽子
+            `;
+            
+            // 更新实例化解释
+            let explanationText = '';
+            
+            if (pigeonCount > nestCount) {
+                explanationText = `
+                    当鸽子数为 <strong>${pigeonCount}</strong>，鸽巢数为 <strong>${nestCount}</strong> 时：<br><br>
+                    • 计算：${pigeonCount} ÷ ${nestCount} = ${division.toFixed(2)}<br>
+                    • 向上取整：⌈${division.toFixed(2)}⌉ = <strong>${minPigeons}</strong><br>
+                    • 因此：至少有一个鸽巢中有 <strong>${minPigeons}</strong> 只鸽子<br><br>
+                    这个结果意味着，无论鸽子如何分配到${nestCount}个鸽巢中，
+                    必然存在至少一个鸽巢，其中的鸽子数量不少于${minPigeons}只。
+                `;
+            } else if (pigeonCount === nestCount) {
+                explanationText = `
+                    当鸽子数为 <strong>${pigeonCount}</strong>，鸽巢数为 <strong>${nestCount}</strong> 时：<br><br>
+                    • 计算：${pigeonCount} ÷ ${nestCount} = ${division}<br>
+                    • 此时：每个鸽巢最多有 <strong>1</strong> 只鸽子<br><br>
+                    <div class="special-case">
+                        ⚠️ 特殊情况：鸽子数量等于鸽巢数量<br>
+                        此时鸽巢原理的核心条件（k > n）不满足。
+                        最优情况下，每个鸽巢恰好有1只鸽子，不必然出现多只鸽子共处一巢的情况。
+                    </div>
+                `;
+            } else {
+                explanationText = `
+                    当鸽子数为 <strong>${pigeonCount}</strong>，鸽巢数为 <strong>${nestCount}</strong> 时：<br><br>
+                    • 计算：${pigeonCount} ÷ ${nestCount} = ${division.toFixed(2)}<br>
+                    • 向上取整：⌈${division.toFixed(2)}⌉ = <strong>1</strong><br><br>
+                    <div class="special-case">
+                        ⚠️ 特殊情况：鸽子数量小于鸽巢数量<br>
+                        此时鸽巢原理的核心条件（k > n）不满足。
+                        每个鸽巢最多有1只鸽子，甚至有${nestCount - pigeonCount}个鸽巢是空的，
+                        不触发鸽巢原理的核心结论。
+                    </div>
+                `;
+            }
+            
+            dynamicExplanation.innerHTML = explanationText;
+        }
+
+        // ==================== 重置演示 ====================
+        function resetDemo() {
+            clearError();
+            
+            // 重置输入框为默认值
+            pigeonCountInput.value = 10;
+            nestCountInput.value = 3;
+            
+            // 重置变量
+            pigeonCount = 0;
+            nestCount = 0;
+            isGenerated = false;
+            
+            // 禁用随机分配按钮
+            randomBtn.disabled = true;
+            
+            // 恢复空消息显示
+            emptyMessage.style.display = 'block';
+            emptyMessage.textContent = '点击"生成演示"按钮开始演示鸽巢原理';
+            
+            // 隐藏结果区域
+            resultDisplay.style.display = 'none';
+            
+            // 清空鸽巢容器
+            pigeonholesContainer.innerHTML = '';
+            
+            // 重置动态解释
+            dynamicExplanation.textContent = '请先输入数值并生成演示，此处将显示对应的实例化解释。';
+        }
+
+        // ==================== 输入框实时验证 ====================
+        pigeonCountInput.addEventListener('input', () => {
+            const value = pigeonCountInput.value;
+            if (value === '') {
+                clearError();
+                return;
+            }
+            const num = Number(value);
+            if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+                pigeonCountInput.classList.add('error');
+            } else {
+                pigeonCountInput.classList.remove('error');
+            }
+        });
+
+        nestCountInput.addEventListener('input', () => {
+            const value = nestCountInput.value;
+            if (value === '') {
+                clearError();
+                return;
+            }
+            const num = Number(value);
+            if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+                nestCountInput.classList.add('error');
+            } else {
+                nestCountInput.classList.remove('error');
+            }
+        });
+
+        // ==================== 初始化 ====================
+        // 页面加载时自动执行一次重置
+        window.onload = resetDemo;
+    </script>
+</body>
+</html>
