@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>综合科教师心理健康评估系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .intro {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #34495e;
+        }
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .question h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .option {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            background-color: #e8f4f8;
+        }
+        .option.selected {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        #result {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f4f8;
+            border-radius: 8px;
+        }
+        #result h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .dimension-scores {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .dimension-item {
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .total-score {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #2c3e50;
+        }
+        .suggestion {
+            margin-top: 15px;
+            line-height: 1.8;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>综合科教师心理健康值评估测试</h1>
+            <p>适配音体美/科学/信息技术等综合科，专业维度评估</p>
+        </header>
+
+        <div class="intro">
+            <p><strong>测试说明：</strong></p>
+            <p>1. 本测试专为综合科教师设计，含6个核心维度，共20道题目，满分100分；</p>
+            <p>2. 每题根据实际情况选择：1分（完全不符合）-5分（完全符合）；</p>
+            <p>3. 最终得分越高，代表心理健康状态越好；</p>
+            <p>4. 请根据自身真实情况作答，测试结果仅作参考。</p>
+        </div>
+
+        <!-- 测试题目区域 -->
+        <div id="questions-container">
+            <!-- 题目将通过JS动态生成 -->
+        </div>
+
+        <button id="submit-btn">提交测试</button>
+
+        <!-- 结果展示区域 -->
+        <div id="result">
+            <h2>你的心理健康评估结果</h2>
+            <div class="total-score" id="total-score"></div>
+            <div class="dimension-scores" id="dimension-scores"></div>
+            <div class="level" id="level"></div>
+            <div class="suggestion" id="suggestion"></div>
+        </div>
+    </div>
+
+    <script>
+        // 适配综合科教师的测试题目（6个维度，20题，满分100分）
+        const questions = [
+            // 1. 教学压力维度（4题）- 贴合综合科特点：器材管理、跨班教学、课程多样性
+            { text: "我能从容应对跨年级/跨班级的综合科教学任务（如多班体育/美术课）", dimension: "教学压力" },
+            { text: "面对教学器材（如体育器材、实验耗材）不足/损坏，不会感到过度焦虑", dimension: "教学压力" },
+            { text: "学生对综合科的参与度/兴趣波动，不会让我产生自我否定", dimension: "教学压力" },
+            { text: "学校对综合科的考核/评比要求，不会让我长期处于紧张状态", dimension: "教学压力" },
+            
+            // 2. 情绪调节维度（4题）- 贴合综合科特点：户外/课堂秩序、成果展示压力
+            { text: "我能有效控制对课堂秩序混乱（如体育活动、实验课）的烦躁情绪", dimension: "情绪调节" },
+            { text: "下班后能快速从备课/器材整理的疲惫中抽离，享受私人生活", dimension: "情绪调节" },
+            { text: "遇到公开课/成果展示失利后，能在1-2天内恢复积极心态", dimension: "情绪调节" },
+            { text: "我很少因综合科被“边缘化”的现状出现持续性情绪低落", dimension: "情绪调节" },
+            
+            // 3. 睡眠质量维度（3题）- 贴合综合科特点：活动安全、器材准备焦虑
+            { text: "我能保证每天6-8小时的高质量睡眠，不因担心户外课安全问题失眠", dimension: "睡眠质量" },
+            { text: "不会因次日需准备大量教学器材（如实验、美术材料）而早醒", dimension: "睡眠质量" },
+            { text: "睡醒后能感到精力充沛，足以应对户外/动手类综合科教学的体力消耗", dimension: "睡眠质量" },
+            
+            // 4. 职业认同维度（3题）- 贴合综合科特点：学科价值认同、成果显性化
+            { text: "我认为综合科（音体美/科学等）对学生全面发展有不可替代的价值", dimension: "职业认同" },
+            { text: "我对自己的综合科教学能力（如课堂设计、器材使用）基本满意", dimension: "职业认同" },
+            { text: "即使综合科受重视程度低，也不会轻易产生更换教学科目/离职的想法", dimension: "职业认同" },
+            
+            // 5. 社交支持维度（3题）- 贴合综合科特点：跨学科沟通、器材协调
+            { text: "遇到器材协调/场地冲突等问题时，有可以倾诉/求助的同事", dimension: "社交支持" },
+            { text: "家人能理解综合科教学的特殊性（如体力消耗大、备课杂）并给予支持", dimension: "社交支持" },
+            { text: "我愿意参与学校组织的综合科教师交流活动（如教研、技能分享）", dimension: "社交支持" },
+            
+            // 6. 自我关怀维度（3题）- 贴合综合科特点：体力消耗、成果认可
+            { text: "我会定期安排放松时间，缓解综合科教学带来的体力/精力消耗", dimension: "自我关怀" },
+            { text: "能接受综合科教学中的小失误（如器材准备不足），不过度苛责自己", dimension: "自我关怀" },
+            { text: "当因跨班教学/器材管理压力过大时，会主动寻求帮助或调整教学节奏", dimension: "自我关怀" }
+        ];
+
+        // 维度分值初始化
+        const dimensionScores = {
+            "教学压力": 0,
+            "情绪调节": 0,
+            "睡眠质量": 0,
+            "职业认同": 0,
+            "社交支持": 0,
+            "自我关怀": 0
+        };
+        let selectedScores = []; // 存储每题选中的分数
+
+        // 初始化题目
+        function initQuestions() {
+            const container = document.getElementById('questions-container');
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <h3>第${index + 1}题：${q.text}</h3>
+                    <div class="options">
+                        <div class="option" data-score="1">1分（完全不符合）</div>
+                        <div class="option" data-score="2">2分（基本不符合）</div>
+                        <div class="option" data-score="3">3分（一般）</div>
+                        <div class="option" data-score="4">4分（基本符合）</div>
+                        <div class="option" data-score="5">5分（完全符合）</div>
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+
+                // 为选项添加点击事件
+                const options = questionDiv.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.addEventListener('click', () => {
+                        // 取消其他选项选中状态
+                        options.forEach(opt => opt.classList.remove('selected'));
+                        // 选中当前选项
+                        option.classList.add('selected');
+                        // 存储当前题分数
+                        selectedScores[index] = parseInt(option.dataset.score);
+                    });
+                });
+            });
+        }
+
+        // 计算并展示结果
+        function calculateResult() {
+            // 校验是否所有题目都已作答
+            if (selectedScores.length < questions.length || selectedScores.some(score => !score)) {
+                alert("请完成所有题目后再提交！");
+                return;
+            }
+
+            // 重置维度分数
+            for (let key in dimensionScores) {
+                dimensionScores[key] = 0;
+            }
+
+            // 计算各维度总分和总得分
+            let totalScore = 0;
+            questions.forEach((q, index) => {
+                const score = selectedScores[index];
+                totalScore += score;
+                dimensionScores[q.dimension] += score;
+            });
+
+            // 展示结果
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('total-score').textContent = `总得分：${totalScore} 分（满分100分）`;
+
+            // 展示各维度得分
+            const dimensionContainer = document.getElementById('dimension-scores');
+            dimensionContainer.innerHTML = '';
+            for (let key in dimensionScores) {
+                const maxScore = questions.filter(q => q.dimension === key).length * 5;
+                const item = document.createElement('div');
+                item.className = 'dimension-item';
+                item.innerHTML = `<strong>${key}</strong><br>${dimensionScores[key]}/${maxScore}分`;
+                dimensionContainer.appendChild(item);
+            }
+
+            // 评估等级和建议（适配综合科教师）
+            let level, suggestion;
+            if (totalScore >= 85) {
+                level = "【优秀】";
+                suggestion = "你的心理健康状态极佳！作为综合科教师，你能很好地平衡器材管理、跨班教学等特殊工作压力，继续保持当前状态，偶尔的放松能让你更有活力。";
+            } else if (totalScore >= 70 && totalScore < 85) {
+                level = "【良好】";
+                suggestion = "你的心理健康状态良好，大部分维度表现优秀。作为综合科教师，若存在轻微压力（如器材准备焦虑、户外课安全顾虑），建议针对性调整（如提前规划器材、简化教学流程）。";
+            } else if (totalScore >= 55 && totalScore < 70) {
+                level = "【一般】";
+                suggestion = "你的心理健康状态需要关注！作为综合科教师，跨班教学、学科认同等方面可能已出现明显困扰。建议多与同科目同事沟通，合理安排器材准备节奏，必要时寻求学校心理辅导支持。";
+            } else if (totalScore >= 40 && totalScore < 55) {
+                level = "【较差】";
+                suggestion = "你的心理健康状态较差，多个维度存在明显问题（如体力消耗、职业认同低），已影响到日常教学。请务必重视，减少不必要的器材整理/额外工作，优先关注自身状态，及时寻求专业心理帮助。";
+            } else {
+                level = "【极差】";
+                suggestion = "你的心理健康状态极差，已处于高风险状态。作为综合科教师，体力/心理双重压力已严重影响生活，建议立即向学校申请减少教学负荷，联系专业心理机构干预，家人和同事的支持对你至关重要。";
+            }
+
+            document.getElementById('level').innerHTML = `<strong>心理健康等级：</strong>${level}`;
+            document.getElementById('suggestion').innerHTML = `<strong>专业建议：</strong>${suggestion}`;
+
+            // 滚动到结果区域
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 初始化
+        window.onload = function() {
+            initQuestions();
+            // 绑定提交按钮事件
+            document.getElementById('submit-btn').addEventListener('click', calculateResult);
+        };
+    </script>
+</body>
+</html>
